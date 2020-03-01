@@ -40,7 +40,6 @@ def create_app(test_config=None):
     if len(categories) == 0:
       abort(404)
 
-    # categories_formatted = [category.format() for category in categories]
     categories_type = {}
     for category in categories:
       categories_type[category.id] = category.type
@@ -151,9 +150,6 @@ def create_app(test_config=None):
     search_term = body.get('searchTerm', None)
 
     if search_term:
-      body = request.get_json()
-      search_term = body.get('searchTerm', None)
-
       questions = Question.query.order_by(Question.id).filter(
           Question.question.ilike('%{}%'.format(search_term))).all()
       current_questions = paginate_questions(request, questions)
@@ -216,6 +212,7 @@ def create_app(test_config=None):
     try:
       body = request.get_json()
 
+      print(body)
       quiz_category = body.get('quiz_category', None)
       quiz_category_id = quiz_category['id']
 
@@ -232,7 +229,6 @@ def create_app(test_config=None):
         else:
           questions = Question.query.all()
 
-      print(previous_questions)
       max = len(questions) - 1
 
       if max >= 0:
@@ -261,7 +257,7 @@ def create_app(test_config=None):
       'message': 'resource not found'
     }), 404
 
-    @app.route(422)
+    @app.errorhandler(422)
     def unprocessable_entity(error):
       return jsonify({
         'success': False,
@@ -269,7 +265,7 @@ def create_app(test_config=None):
         'message': 'unprocessable entity'
       }), 422
 
-    @app.route(500)
+    @app.errorhandler(500)
     def internal_server_error(error):
       return jsonify({
         'success': False,
@@ -277,7 +273,7 @@ def create_app(test_config=None):
         'message': 'internal server error'
       }), 500
 
-    @app.route(400)
+    @app.errorhandler(400)
     def bad_request(error):
       return jsonify({
         'success': False,
