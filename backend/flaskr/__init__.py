@@ -75,10 +75,10 @@ def create_app(test_config=None):
   @app.route('/questions')
   def get_questions():
     questions = Question.query.order_by(Question.id).all()
-    if len(questions) == 0:
-      abort(404)
 
     current_questions = paginate_questions(request, questions)
+    if len(current_questions) == 0:
+      abort(404)
     categories = Category.query.order_by(Category.id).all()
 
     categories_type = {}
@@ -186,6 +186,8 @@ def create_app(test_config=None):
   def retrieve_questions_by_catogory(category_id):
     questions = Question.query.order_by(Question.id).filter(Question.category == category_id).all()
     current_questions = paginate_questions(request, questions)
+    if len(current_questions) == 0:
+      abort(404)
 
     category = Category.query.filter(Category.id == category_id).one_or_none()
 
@@ -212,9 +214,8 @@ def create_app(test_config=None):
     try:
       body = request.get_json()
 
-      print(body)
       quiz_category = body.get('quiz_category', None)
-      quiz_category_id = quiz_category['id']
+      quiz_category_id = quiz_category.get('id', None)
 
       previous_questions = body.get('previous_questions', None)
 
